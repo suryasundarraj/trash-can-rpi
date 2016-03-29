@@ -1,0 +1,19 @@
+RPI CLIENT TO SERVER [MQTT]
+----------------------------
+
+PROTOCOL : MQTT 
+
+CHANNEL : garbaseData
+
+JSON DATA : {"container": "001", "level": 120.36}
+
+SERVER TO APP
+--------------
+
+PROTOCOL : PUBNUB
+
+CHANNEL : garbageApp-resp
+
+JSON DATA : {"container": "001", "level": 120.36}
+
+

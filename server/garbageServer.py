@@ -114,6 +114,7 @@ def on_message(client, userdata, msg):
 	pubnub.publish(channel="garbageApp-resp", message=message)
 	if(message.has_key("level") and message["level"] <= 40):
 		mail_init()
+		print "Trash can is Full"
 
 
 '''****************************************************************************************
