@@ -6,7 +6,8 @@ import paho.mqtt.client as mqtt
 from pubnub import Pubnub
 import ConfigParser
 import logging
-import json  
+import json
+import smtplib  
 
 #Importing the Config File and Parsing the file using the ConfigParser
 config_file = "./config.ini"
@@ -42,6 +43,44 @@ SUB_KEY = ConfigSectionMap("pubnub_init")['sub_key']
 HOST_IP = ConfigSectionMap("mqtt_init")['host_ip']
 CHANNEL_OBJECT = "garbaseData"
 
+SENDER_MAIL_ID = ConfigSectionMap("email_user_settings")['user_email_id']
+SENDER_PASSWORD = ConfigSectionMap("email_user_settings")['user_password']
+RECEIVER_MAIL_ID = ConfigSectionMap("email_receiver_settings")['receiver_mail_id']
+EMAIL_HOST_AND_PORT = ConfigSectionMap("email_user_settings")['host_and_port']
+SUBJECT = "TRASH CAN WARNING"
+TEXT = "Trash Can is Full"
+
+# Prepare actual message
+MESSAGE_TO_SEND = """\
+Subject: %s
+
+%s
+""" % (SUBJECT, TEXT)
+
+'''****************************************************************************************
+
+Function Name 		:	mail_init
+Description		:	Initilize the mail with the username and password 
+Parameters 		:	none
+
+****************************************************************************************'''
+def mail_init():
+	global server
+	mail_connect = 0
+	while mail_connect < 3:
+		try:
+			server = smtplib.SMTP(EMAIL_HOST_AND_PORT)
+			server.starttls()
+			server.login(SENDER_MAIL_ID,SENDER_PASSWORD)
+			server.sendmail(SENDER_MAIL_ID,RECEIVER_MAIL_ID,MESSAGE_TO_SEND)
+			server.quit()
+			return None 
+		except smtplib.SMTPException:
+			print "Error: unable to Connect to email server"
+			mail_connect += 1
+	return None
+
+
 '''****************************************************************************************
 
 Function Name 		:	on_connect
@@ -68,9 +107,14 @@ Parameters 		:	client - client id
 ****************************************************************************************'''
 # 
 def on_message(client, userdata, msg):
+	global server
 	message = dict()
-	message = json.loads(msg.payload)  
+	message = json.loads(msg.payload)
+	print message  
 	pubnub.publish(channel="garbageApp-resp", message=message)
+	if(message.has_key("level") and message["level"] <= 40):
+		mail_init()
+
 
 '''****************************************************************************************
 
