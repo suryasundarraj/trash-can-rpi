@@ -1,1 +1,2 @@
-# trash-can-rpi
+# smarttrash
+Smart Trash Can
